@@ -1,0 +1,353 @@
+import React, { Component } from "react";
+import { Modal } from "react-bootstrap";
+import Select from "react-select";
+import SelectTemplate from "../../components/SelectTemplate";
+import { Add } from "@material-ui/icons";
+import axios from "axios";
+
+const empSize = [
+  { value: "1 - 50 employees", label: "1 - 50 employees" },
+  { value: "51 - 200 employees", label: "51 - 200 employees" },
+  { value: "201 - 500 employees", label: "201 - 500 employees" },
+  { value: "501 - 1000 employees", label: "501 - 1000 employees" },
+  { value: "1001 - 10000 employees", label: "1001 - 10000 employees" },
+  { value: "10001 - UP employees", label: "10001 - UP employees" },
+];
+
+export default class AddCompanyModal extends Component {
+  constructor() {
+    super();
+    this.state = {
+      showAddModal: false,
+      showSuccess: true,
+    };
+    this.handleShowAddModal = this.handleShowAddModal.bind(this);
+    this.handleSubmit = this.handleSubmit.bind(this);
+    this.handleChangeEmpSize = this.handleChangeEmpSize.bind(this);
+  }
+
+  handleShowAddModal = (e) => {
+    this.setState({ showAddModal: !this.state.showAddModal });
+  };
+
+  handleChangeEmpSize = (e) => {
+    this.setState({ employee_size: e.value });
+  };
+
+  handleCallback = (childData) => {
+    if (childData.field == "conglomerates") {
+      this.setState({ conglomerate_id: childData.value });
+    } else if (childData.field == "industries") {
+      this.setState({ industry_id: childData.value });
+    } else if (childData.field == "technologies") {
+      this.setState({ technologies: childData.value });
+    } else if (childData.field == "marketsegments") {
+      this.setState({ market_segment_id: childData.value });
+    }
+  };
+
+  handleSubmit = (e) => {
+    e.preventDefault();
+    console.log(this.state);
+    axios
+      .post("api/company", this.state)
+      .then((res) => {
+        console.log(res);
+        this.setState({
+          showAddModal: false,
+          name: "",
+          affiliate_company: "",
+          conglomerate_id: "",
+          annual_revenue: "",
+          employee_size: "",
+          industry_id: "",
+          technologies: "",
+          market_segment_id: "",
+          billing_address_city: "",
+          billing_address_country: "",
+          billing_address_line_1: "",
+          billing_address_line_2: "",
+          billing_address_province: "",
+          billing_address_zip: "",
+          business_address_city: "",
+          business_address_country: "",
+          business_address_line_1: "",
+          business_address_line_2: "",
+          business_address_province: "",
+          business_address_zip: "",
+        });
+        this.props.parentCallback(true);
+        console.log("success");
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  };
+
+  render() {
+    return (
+      <>
+        <button
+          className="btn btn-sm btn-outline-primary"
+          onClick={this.handleShowAddModal}
+        >
+          <Add /> New Company
+        </button>
+        <Modal
+          size="xl"
+          show={this.state.showAddModal}
+          onHide={() =>
+            this.setState({ showAddModal: !this.state.showAddModal })
+          }
+        >
+          <Modal.Header closeButton>
+            <h4>New Company</h4>
+          </Modal.Header>
+          <Modal.Body>
+            <form onSubmit={this.handleSubmit} id="company-form">
+              <div className="card card-secondary ">
+                <h6 className="card-header">Company Details</h6>
+                <div className="card-body">
+                  <div className="row">
+                    <div className="form-group col-md-6 col-sm-12">
+                      <label>Company name</label>
+                      <input
+                        type="text"
+                        className="form-control"
+                        onChange={(e) =>
+                          this.setState({ name: e.target.value })
+                        }
+                        required
+                      />
+                    </div>
+                    <div className="form-group col-md-6 col-sm-12">
+                      <label>Affliate Company</label>
+                      <input
+                        type="text"
+                        className="form-control"
+                        onChange={(e) =>
+                          this.setState({ affiliate_company: e.target.value })
+                        }
+                      />
+                    </div>
+                  </div>
+                  <div className="row">
+                    <div className="form-group col-md-6 col-sm-12">
+                      <label>Conglomerate</label>
+                      <SelectTemplate
+                        tableName={"conglomerates"}
+                        parentCallback={this.handleCallback}
+                      />
+                    </div>
+                    <div className="form-group col-md-6 col-sm-12">
+                      <label>Annual Revenue</label>
+                      <div class="input-group mb-2">
+                        <div class="input-group-prepend">
+                          <div class="input-group-text">₱</div>
+                        </div>
+                        <input
+                          type="number"
+                          className="form-control"
+                          onChange={(e) =>
+                            this.setState({ annual_revenue: e.target.value })
+                          }
+                          required
+                        />
+                      </div>
+                    </div>
+                  </div>
+                  <div className="row">
+                    <div className="form-group col-md-6 col-sm-12">
+                      <label>Industry</label>
+                      <SelectTemplate
+                        tableName={"industries"}
+                        parentCallback={this.handleCallback}
+                      />
+                    </div>
+                    <div className="form-group col-md-6 col-sm-12">
+                      <label>Technology</label>
+                      <SelectTemplate
+                        tableName={"technologies"}
+                        isMulti={true}
+                        parentCallback={this.handleCallback}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="row">
+                    <div className="form-group col-md-6 col-sm-12">
+                      <label>Market Segment</label>
+                      <SelectTemplate
+                        tableName={"marketsegments"}
+                        parentCallback={this.handleCallback}
+                      />
+                    </div>
+                    <div className="form-group col-md-6 col-sm-12">
+                      <label>Employee Size</label>
+                      <Select
+                        options={empSize}
+                        isSearchable
+                        onChange={this.handleChangeEmpSize}
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div className="card card-secondary ">
+                <h6 className="card-header">Business Address</h6>
+                <div className="card-body">
+                  <div className="row">
+                    <div className="form-group col-md-12 col-sm-12">
+                      <label>Business Address</label>
+                      <input
+                        type="text"
+                        className="form-control"
+                        onChange={(e) =>
+                          this.setState({
+                            business_address_line_1: e.target.value,
+                          })
+                        }
+                      />
+                    </div>
+                  </div>
+                  <div className="row">
+                    <div className="form-group col-md-6 col-sm-12">
+                      <label>Business City</label>
+                      <input
+                        type="text"
+                        className="form-control"
+                        onChange={(e) =>
+                          this.setState({
+                            business_address_city: e.target.value,
+                          })
+                        }
+                      />
+                    </div>
+                    <div className="form-group col-md-6 col-sm-12">
+                      <label>Business Province</label>
+                      <input
+                        type="text"
+                        className="form-control"
+                        onChange={(e) =>
+                          this.setState({
+                            business_address_province: e.target.value,
+                          })
+                        }
+                      />
+                    </div>
+                  </div>
+                  <div className="row">
+                    <div className="form-group col-md-6 col-sm-12">
+                      <label>Business Country</label>
+                      <input
+                        type="text"
+                        className="form-control"
+                        onChange={(e) =>
+                          this.setState({
+                            business_address_country: e.target.value,
+                          })
+                        }
+                      />
+                    </div>
+                    <div className="form-group col-md-6 col-sm-12">
+                      <label>Business Zip Code</label>
+                      <input
+                        type="text"
+                        className="form-control"
+                        onChange={(e) =>
+                          this.setState({
+                            business_address_zip: e.target.value,
+                          })
+                        }
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div className="card card-secondary ">
+                <h6 className="card-header">Billing Address</h6>
+                <div className="card-body">
+                  <div className="row">
+                    <div className="form-group col-md-12 col-sm-12">
+                      <label>Billing Address</label>
+                      <input
+                        type="text"
+                        className="form-control"
+                        onChange={(e) =>
+                          this.setState({
+                            billing_address_line_1: e.target.value,
+                          })
+                        }
+                      />
+                    </div>
+                  </div>
+                  <div className="row">
+                    <div className="form-group col-md-6 col-sm-12">
+                      <label>Billing City</label>
+                      <input
+                        type="text"
+                        className="form-control"
+                        onChange={(e) =>
+                          this.setState({
+                            billing_address_city: e.target.value,
+                          })
+                        }
+                      />
+                    </div>
+                    <div className="form-group col-md-6 col-sm-12">
+                      <label>Billing Province</label>
+                      <input
+                        type="text"
+                        className="form-control"
+                        onChange={(e) =>
+                          this.setState({
+                            billing_address_province: e.target.value,
+                          })
+                        }
+                      />
+                    </div>
+                  </div>
+                  <div className="row">
+                    <div className="form-group col-md-6 col-sm-12">
+                      <label>Billing Country</label>
+                      <input
+                        type="text"
+                        className="form-control"
+                        onChange={(e) =>
+                          this.setState({
+                            billing_address_country: e.target.value,
+                          })
+                        }
+                      />
+                    </div>
+                    <div className="form-group col-md-6 col-sm-12">
+                      <label>Billing Zip Code</label>
+                      <input
+                        type="text"
+                        className="form-control"
+                        onChange={(e) =>
+                          this.setState({ billing_address_zip: e.target.value })
+                        }
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div className="float-right">
+                <button type="submit" className="btn btn-primary btn-sm mr-2">
+                  Save
+                </button>
+                <button
+                  onClick={this.handleShowAddModal}
+                  className="btn btn-danger btn-sm"
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
+          </Modal.Body>
+        </Modal>
+      </>
+    );
+  }
+}
